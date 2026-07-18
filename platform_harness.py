@@ -46,13 +46,15 @@ def _resolve_under_root(root: str, relative_path: str, field_name: str) -> str:
     parts = PurePosixPath(portable).parts
     if ".." in parts:
         raise ValueError(f"{field_name} must stay within the host root")
-    root_abs = os.path.realpath(os.path.abspath(root))
-    candidate = os.path.realpath(os.path.join(root_abs, *parts))
+    root_abs = os.path.abspath(root)
+    candidate = os.path.abspath(os.path.join(root_abs, *parts))
+    root_real = os.path.realpath(root_abs)
+    candidate_real = os.path.realpath(candidate)
     try:
-        common = os.path.commonpath([root_abs, candidate])
+        common = os.path.commonpath([root_real, candidate_real])
     except ValueError as exc:
         raise ValueError(f"{field_name} must stay within the host root") from exc
-    if os.path.normcase(common) != os.path.normcase(root_abs):
+    if os.path.normcase(common) != os.path.normcase(root_real):
         raise ValueError(f"{field_name} must stay within the host root")
     return candidate
 

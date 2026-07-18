@@ -63,7 +63,7 @@ class TestPlatformHarness(unittest.TestCase):
         )
         self.assertEqual(
             harness.workspace_root,
-            os.path.join(os.path.realpath(self.agent_root), "nested", "workspace"),
+            os.path.join(os.path.abspath(self.agent_root), "nested", "workspace"),
         )
 
     def test_status_and_human_input_helpers(self):
