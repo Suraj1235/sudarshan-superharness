@@ -8,7 +8,10 @@ to build a Sudarshan-compatible spawn envelope without depending on OpenClaw.
 from __future__ import annotations
 
 import json
+import ntpath
 import os
+import posixpath
+from pathlib import PurePosixPath
 from typing import Any, Dict, List, Optional
 
 
@@ -34,16 +37,22 @@ DEFAULT_REQUIRED_CAPABILITIES: List[str] = [
 
 
 def _resolve_under_root(root: str, relative_path: str, field_name: str) -> str:
-    normalized = os.path.normpath(relative_path)
-    if os.path.isabs(normalized):
+    if not isinstance(relative_path, str) or not relative_path or "\x00" in relative_path:
+        raise ValueError(f"{field_name} must be a non-empty relative path")
+    portable = relative_path.replace("\\", "/")
+    drive, _tail = ntpath.splitdrive(relative_path)
+    if drive or ntpath.isabs(relative_path) or posixpath.isabs(portable):
         raise ValueError(f"{field_name} must be relative to the host root")
-    candidate = os.path.abspath(os.path.join(root, normalized))
-    root_abs = os.path.abspath(root)
+    parts = PurePosixPath(portable).parts
+    if ".." in parts:
+        raise ValueError(f"{field_name} must stay within the host root")
+    root_abs = os.path.realpath(os.path.abspath(root))
+    candidate = os.path.realpath(os.path.join(root_abs, *parts))
     try:
         common = os.path.commonpath([root_abs, candidate])
     except ValueError as exc:
         raise ValueError(f"{field_name} must stay within the host root") from exc
-    if common != root_abs:
+    if os.path.normcase(common) != os.path.normcase(root_abs):
         raise ValueError(f"{field_name} must stay within the host root")
     return candidate
 

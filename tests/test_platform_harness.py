@@ -47,8 +47,24 @@ class TestPlatformHarness(unittest.TestCase):
         self.assertIn("spawn_subagent", request["required_capabilities"])
 
     def test_workspace_root_cannot_escape_agent_root(self):
-        with self.assertRaises(ValueError):
-            SudarshanHarness(self.agent_root, workspace_subdir="../outside")
+        for unsafe_path in (
+            "../outside",
+            "..\\outside",
+            "/tmp/outside",
+            "\\outside",
+            "C:\\outside",
+        ):
+            with self.subTest(path=unsafe_path), self.assertRaises(ValueError):
+                SudarshanHarness(self.agent_root, workspace_subdir=unsafe_path)
+
+    def test_workspace_root_normalizes_both_separator_styles(self):
+        harness = SudarshanHarness(
+            self.agent_root, workspace_subdir="nested\\workspace"
+        )
+        self.assertEqual(
+            harness.workspace_root,
+            os.path.join(os.path.realpath(self.agent_root), "nested", "workspace"),
+        )
 
     def test_status_and_human_input_helpers(self):
         harness = SudarshanHarness(self.agent_root)
