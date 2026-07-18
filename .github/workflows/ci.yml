@@ -27,6 +27,8 @@ jobs:
             python: "3.13"
           - os: windows-latest
             python: "3.13"
+          - os: macos-latest
+            python: "3.13"
 
     steps:
       - name: Check out source
