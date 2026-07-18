@@ -1,0 +1,9 @@
+{
+  "name": "kill_all_subagents",
+  "description": "Terminate all running sub-agents for the current Sudarshan session",
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  }
+}

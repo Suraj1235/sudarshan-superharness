@@ -1,0 +1,15 @@
+{
+  "name": "kill_subagent",
+  "description": "Terminate a running background sub-agent (Zombie Prune)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "agent_id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "agent_id"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "list_subagents",
+  "description": "List all active sub-agents spawned by the current Sudarshan session",
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  }
+}

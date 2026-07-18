@@ -1,0 +1,10 @@
+{
+  "verdict_version": "{{VERSION}}",
+  "sources_consulted": 0,
+  "ambiguities_remaining": [],
+  "coverage_gaps": [],
+  "verdict": null,
+  "metadata": {
+    "judged_at": null
+  }
+}

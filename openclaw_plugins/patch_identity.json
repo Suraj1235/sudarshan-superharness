@@ -1,0 +1,21 @@
+{
+  "name": "patch_identity",
+  "description": "Patch a target OpenClaw agent with Sudarshan router, soul, user, and heartbeat kernels",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "agent_root": {
+        "type": "string",
+        "description": "Path to the target OpenClaw agent root"
+      },
+      "force": {
+        "type": "boolean",
+        "default": false,
+        "description": "Overwrite existing Sudarshan-managed sections if present"
+      }
+    },
+    "required": [
+      "agent_root"
+    ]
+  }
+}

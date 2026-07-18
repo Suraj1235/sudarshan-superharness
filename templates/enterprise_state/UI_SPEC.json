@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "pages": [],
+  "design_system": {
+    "aesthetic_vector": [],
+    "colors": {
+      "primary": null,
+      "secondary": null,
+      "background": null,
+      "surface": null,
+      "destructive": null,
+      "muted": null,
+      "border": null
+    },
+    "typography": {
+      "font_family": null,
+      "display_font": null,
+      "body_font": null,
+      "scale": []
+    },
+    "spacing_unit": "8px",
+    "border_radius": null,
+    "shadow_system": null
+  },
+  "component_library": null,
+  "custom_components": [],
+  "animation_library": null,
+  "animation_tokens": [],
+  "responsive_breakpoints": [],
+  "accessibility": {
+    "wcag_level": "AA",
+    "focus_visible": true
+  }
+}

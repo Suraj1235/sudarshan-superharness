@@ -1,0 +1,18 @@
+openapi: 3.0.0
+info:
+  title: TODO - Filled by PM Node during Phase 1 Gate 4
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+paths:
+  # TODO - Add routes here (filled by PM during Phase 1)
+components:
+  schemas:
+    # TODO - Define shared data models here
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []

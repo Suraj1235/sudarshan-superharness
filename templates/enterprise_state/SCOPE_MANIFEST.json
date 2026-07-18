@@ -1,0 +1,11 @@
+{
+  "scope_version": "{{VERSION}}",
+  "core": [],
+  "nice_to_have": [],
+  "v2_backlog": [],
+  "node_count_estimate": 0,
+  "metadata": {
+    "validated_by": "scope-validator",
+    "created_at": null
+  }
+}

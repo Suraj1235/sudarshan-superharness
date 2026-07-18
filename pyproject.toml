@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sudarshan-superharness"
+version = "16.9.2"
+description = "Provider-neutral, durable orchestration and execution harness for long-running LLM software builds"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [{name = "Suraj Kuncham"}]
+keywords = ["llm", "agents", "orchestration", "software-engineering", "autonomous-agents"]
+dependencies = []
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Build Tools",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8",
+  "tomli>=2; python_version < '3.11'",
+]
+
+[project.urls]
+Homepage = "https://github.com/Suraj1235/sudarshan-superharness"
+Repository = "https://github.com/Suraj1235/sudarshan-superharness"
+Issues = "https://github.com/Suraj1235/sudarshan-superharness/issues"
+
+[project.scripts]
+sudarshan = "sudarshan_cli:main"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["sudarshan_assets"]
+py-modules = [
+  "autonomous_engine",
+  "dag_subgraph",
+  "dag_validator",
+  "engine_tools",
+  "estimator",
+  "generic_router_bridge",
+  "heartbeat_daemon",
+  "install",
+  "observer",
+  "openclaw_adapter",
+  "openclaw_patcher",
+  "openclaw_router_bridge",
+  "platform_harness",
+  "process_runner",
+  "protocol_assets",
+  "protocol_runtime",
+  "providers",
+  "quality_gate",
+  "safe_edit",
+  "sudarshan_cli",
+  "taskmanager",
+  "verify_installation",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

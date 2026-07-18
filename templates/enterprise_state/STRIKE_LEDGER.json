@@ -1,0 +1,15 @@
+{
+  "ledger_version": "{{VERSION}}",
+  "total_strikes": 0,
+  "total_staff_engineer_interventions": 0,
+  "total_session_cost_usd": 0.0,
+  "strikes": [],
+  "staff_interventions": [],
+  "pm_audit_rejections": [],
+  "token_usage": [],
+  "metadata": {
+    "initialized_at": null,
+    "last_updated_at": null,
+    "swarm_session_id": null
+  }
+}

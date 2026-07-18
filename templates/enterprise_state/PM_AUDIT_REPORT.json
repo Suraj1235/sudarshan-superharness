@@ -1,0 +1,38 @@
+{
+  "audit_version": "{{VERSION}}",
+  "AA1": {
+    "step": "Dependency Health Audit",
+    "result": null,
+    "evidence": null,
+    "source": null
+  },
+  "AA2": {
+    "step": "Scalability Audit",
+    "result": null,
+    "evidence": null,
+    "source": null
+  },
+  "AA3": {
+    "step": "OWASP LLM + Agent Security Audit",
+    "result": null,
+    "evidence": null,
+    "source": null
+  },
+  "AA4": {
+    "step": "Contract Completeness Audit",
+    "result": null,
+    "evidence": null,
+    "source": null
+  },
+  "AA5": {
+    "step": "Deployment Reality Audit",
+    "result": null,
+    "evidence": null,
+    "source": null
+  },
+  "overall_verdict": null,
+  "metadata": {
+    "audited_at": null,
+    "skill_version": "architecture-auditor"
+  }
+}

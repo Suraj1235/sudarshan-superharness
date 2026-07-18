@@ -1,0 +1,29 @@
+{
+  "blackboard_version": "{{VERSION}}",
+  "status": "IDLE",
+  "blocker_type": null,
+  "blocker_description": null,
+  "blocked_since": null,
+  "awaiting": null,
+  "observer_attempts": 0,
+  "escalated_to_l1": false,
+  "resolution": null,
+  "event": null,
+  "affected": [],
+  "metadata": {
+    "last_updated_at": null,
+    "model": "default",
+    "model_pricing": null,
+    "budget": {
+      "max_session_token_burn_usd": 10.0,
+      "alert_threshold_percent": 80,
+      "hard_kill_on_exceed": true
+    },
+    "performance": {
+      "parallel_batches": 0,
+      "max_parallelism": 0,
+      "estimated_speedup": 0,
+      "total_dag_nodes": 0
+    }
+  }
+}

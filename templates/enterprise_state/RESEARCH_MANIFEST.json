@@ -1,0 +1,16 @@
+{
+  "manifest_version": "{{VERSION}}",
+  "super_prompt_hash": null,
+  "sources": [],
+  "stack_matrix": {},
+  "env_manifest": [],
+  "anti_patterns_found": [],
+  "deployment_constraints": [],
+  "open_ambiguities": [],
+  "search_query_count": 0,
+  "web_fetch_count": 0,
+  "metadata": {
+    "created_at": null,
+    "last_updated_at": null
+  }
+}

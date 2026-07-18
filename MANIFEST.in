@@ -1,0 +1,17 @@
+include VERSION
+include LICENSE
+include README.md
+include install_manifest.json
+include setup.py
+include *.md
+include *.json
+include *.yaml
+include *.ps1
+include *.sh
+recursive-include templates *
+recursive-include skills *
+recursive-include infrastructure *
+recursive-include openclaw_plugins *
+recursive-include sudarshan_assets *
+recursive-include docs/assets *.png
+recursive-include examples *

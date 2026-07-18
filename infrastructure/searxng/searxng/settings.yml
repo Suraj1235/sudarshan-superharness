@@ -1,0 +1,36 @@
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "Sudarshan Local Research"
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "overridden-by-SEARXNG_SECRET"
+  image_proxy: false
+  limiter: true
+  public_instance: false
+
+valkey:
+  url: valkey://valkey:6379/0
+
+search:
+  safe_search: 1
+  formats:
+    - html
+    - json
+
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    use_mobile_ui: false
+
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: d
+
+  - name: bing
+    engine: bing
+    shortcut: b

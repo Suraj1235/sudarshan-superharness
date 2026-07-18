@@ -1,0 +1,22 @@
+{
+  "dag_version": "{{VERSION}}",
+  "description": "Sample DAG scaffold. Replace with a real execution graph before running the Swarm.",
+  "nodes": [
+    {
+      "id": "SETUP",
+      "squad": "orchestrator",
+      "description": "Initialize repository and baseline tooling",
+      "dependencies": [],
+      "status": "PENDING"
+    },
+    {
+      "id": "IMPLEMENTATION",
+      "squad": "grunt",
+      "description": "Placeholder node for first real build task",
+      "dependencies": [
+        "SETUP"
+      ],
+      "status": "PENDING"
+    }
+  ]
+}

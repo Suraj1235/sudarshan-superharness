@@ -1,0 +1,49 @@
+{
+  "name": "spawn_subagent",
+  "description": "Spawn an isolated asynchronous sub-agent in the background",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task": {
+        "type": "string"
+      },
+      "model": {
+        "type": "string",
+        "description": "Model identifier or model category to pin for this sub-agent"
+      },
+      "thinking": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "max"
+        ],
+        "default": "max",
+        "description": "Reasoning depth for the sub-agent"
+      },
+      "timeoutSeconds": {
+        "type": "integer",
+        "default": 3600
+      },
+      "toolPolicy": {
+        "type": "object",
+        "description": "e.g., {'deny': ['web_search']}"
+      },
+      "contextSharing": {
+        "type": "string",
+        "enum": [
+          "none",
+          "summary",
+          "full"
+        ],
+        "default": "none"
+      }
+    },
+    "required": [
+      "task",
+      "model",
+      "thinking"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "contract_version": "16.9.2",
+  "name": "Sudarshan Host Contract",
+  "required_capabilities": [
+    "spawn_subagent",
+    "list_subagents",
+    "kill_subagent",
+    "kill_all_subagents",
+    "stream_output",
+    "intercept_system_signals",
+    "workspace_filesystem_rw",
+    "shell_exec"
+  ],
+  "default_spawn": {
+    "runtime": {
+      "reasoning": "max",
+      "timeout_seconds": 3600
+    },
+    "context": {
+      "sharing": "none"
+    },
+    "tool_policy": {
+      "deny": [
+        "web_search"
+      ]
+    }
+  },
+  "system_intercepts": {
+    "[SYSTEM: HAAS_REQUEST]": "spawn_observer",
+    "[SYSTEM: RELAY_BATON]": "resume_orchestrator",
+    "[SYSTEM: JUDGE_PROBE_READY]": "spawn_judge_probe",
+    "[SYSTEM: BUDGET_WARNING]": "notify_l1",
+    "[SYSTEM: BUDGET_EXCEEDED]": "halt_swarm",
+    "[SYSTEM: TASK_COMPLETE]": "deliver_completion_report"
+  }
+}

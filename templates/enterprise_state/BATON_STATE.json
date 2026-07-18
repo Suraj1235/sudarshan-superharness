@@ -1,0 +1,21 @@
+{
+  "baton_version": "{{VERSION}}",
+  "status": "IDLE",
+  "current_phase": null,
+  "current_task_node_id": null,
+  "completed_nodes": [],
+  "pending_nodes": [],
+  "failed_nodes": [],
+  "serialized_context": {
+    "super_prompt_hash": null,
+    "dag_snapshot_path": "enterprise_state/JIRA_DAG.json",
+    "architecture_state_path": "enterprise_state/ARCHITECTURE_STATE.md",
+    "last_orchestrator_notes": null
+  },
+  "relay_count": 0,
+  "metadata": {
+    "created_at": null,
+    "last_serialized_at": null,
+    "swarm_session_id": null
+  }
+}

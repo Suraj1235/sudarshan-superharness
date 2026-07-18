@@ -1,0 +1,16 @@
+{
+  "agent_name": "blank-openclaw-agent",
+  "version": "0.0.0",
+  "identity": {
+    "router_rules_path": "identity/IDENTITY.md",
+    "persona_path": "identity/SOUL.md",
+    "user_policy_path": "identity/USER.md",
+    "heartbeat_path": "identity/HEARTBEAT.md"
+  },
+  "commands": {},
+  "system_intercepts": {},
+  "plugins": [],
+  "tool_policy_defaults": {
+    "deny": []
+  }
+}
