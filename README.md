@@ -207,7 +207,7 @@ The command provider sends one JSON request on stdin:
   "model": "framework-model",
   "messages": [{"role": "system", "content": "..."}],
   "temperature": 0.1,
-  "max_output_tokens": null
+  "max_output_tokens": 8192
 }
 ```
 
@@ -258,7 +258,7 @@ flowchart TB
 - Destructive Git recovery commands blocked
 - Single-process workspace execution lease with expiry and refresh
 - Atomic engine state plus append-only event history after every action
-- Token, output, cost, step, retry-attempt, and retry-window ceilings
+- Preflight input, output, and configured-cost authorization limits, plus step and retry limits
 - HTTP `Retry-After` plus periodic exponential backoff persisted across restarts
 - Human pause/input/resume without reconstructing a chat transcript
 - Operator verification commands that the model cannot remove
@@ -298,12 +298,22 @@ usage, cost, and exact passing commands.
 | `--max-retries` | unlimited | Optional attempt ceiling |
 | `--retry-window-seconds` | `21600` | Six-hour transient retry window |
 | `--retry-forever` | off | Removes the elapsed retry window |
-| `--max-cost` | unset | Stops at recorded USD cost |
-| `--max-input-tokens` | unset | Stops at cumulative input usage |
-| `--max-output-tokens` | unset | Stops at cumulative output usage |
+| `--max-cost` | unset | Reserves the next prompt and caps output using configured prices |
+| `--max-input-tokens` | unset | Refuses a call when its conservative prompt bound exceeds remaining usage |
+| `--max-output-tokens` | unset | Passes the remaining cumulative allowance to every provider call |
+| `--max-output-per-call` | `8192` | Bounds each request before cumulative and cost limits are applied |
 
 Explicit provider `Retry-After` values are honored even when they exceed the local
 backoff cap. Authentication, malformed responses, and policy failures fail fast.
+
+Budgets are engine-level call authorization controls. Before each call, Sudarshan uses
+the serialized prompt byte count as a conservative provider-neutral input-token bound,
+then passes the tightest remaining output allowance through `max_output_tokens`. Cost
+reservations depend on the prices you configure, while actual totals use provider-reported
+usage. Native adapters enforce the output request cap; custom command bridges must honor
+the same contract. Provider-side billing, failed requests that report no usage, and an
+untrusted bridge remain outside the engine's control, so use account-level provider limits
+as the final financial guardrail.
 
 ## Two Architectures, Clearly Separated
 

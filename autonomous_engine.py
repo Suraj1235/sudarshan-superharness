@@ -12,9 +12,10 @@ import time
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
+from decimal import ROUND_FLOOR, Decimal
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Optional, Sequence
+from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from engine_tools import ToolPolicyError, WorkspaceTools
 from protocol_runtime import ProtocolStateBridge
@@ -95,6 +96,7 @@ class EngineConfig:
     max_cost_usd: Optional[float] = None
     max_input_tokens: Optional[int] = None
     max_output_tokens: Optional[int] = None
+    max_output_tokens_per_call: int = 8192
     input_price_per_million: float = 0.0
     output_price_per_million: float = 0.0
     retry_initial_seconds: float = 5.0
@@ -146,6 +148,12 @@ class EngineConfig:
                 or token_limit < 0
             ):
                 raise ValueError("token ceilings must be non-negative integers or None")
+        if (
+            isinstance(self.max_output_tokens_per_call, bool)
+            or not isinstance(self.max_output_tokens_per_call, int)
+            or self.max_output_tokens_per_call < 1
+        ):
+            raise ValueError("per-call output limit must be a positive integer")
         if not math.isfinite(float(self.command_timeout_seconds)) or self.command_timeout_seconds <= 0:
             raise ValueError("command timeout must be positive and finite")
         if (
@@ -359,6 +367,7 @@ class AutonomousEngine:
                 "max_cost_usd": self.config.max_cost_usd,
                 "max_input_tokens": self.config.max_input_tokens,
                 "max_output_tokens": self.config.max_output_tokens,
+                "max_output_tokens_per_call": self.config.max_output_tokens_per_call,
             },
         }
 
@@ -444,6 +453,64 @@ class AutonomousEngine:
             return "output token ceiling reached"
         return None
 
+    @staticmethod
+    def _input_token_upper_bound(messages: List[Dict[str, str]]) -> int:
+        serialized = json.dumps(messages, ensure_ascii=False, separators=(",", ":"))
+        return max(1, len(serialized.encode("utf-8")))
+
+    def _request_budget(
+        self,
+        messages: List[Dict[str, str]],
+    ) -> Tuple[Optional[str], Optional[int]]:
+        usage = self.state["usage"]
+        input_bound = self._input_token_upper_bound(messages)
+        max_output_tokens = self.config.max_output_tokens_per_call
+
+        if self.config.max_input_tokens is not None:
+            remaining_input = self.config.max_input_tokens - int(usage["input_tokens"])
+            if input_bound > remaining_input:
+                return (
+                    "input token ceiling cannot admit next prompt: "
+                    f"conservative bound {input_bound} > remaining {remaining_input}",
+                    None,
+                )
+
+        if self.config.max_output_tokens is not None:
+            remaining_output = self.config.max_output_tokens - int(usage["output_tokens"])
+            if remaining_output < 1:
+                return "output token ceiling reached", None
+            max_output_tokens = min(max_output_tokens, remaining_output)
+
+        if self.config.max_cost_usd is not None:
+            remaining_cost = Decimal(str(self.config.max_cost_usd)) - Decimal(
+                str(usage["cost_usd"])
+            )
+            input_cost = (
+                Decimal(input_bound)
+                * Decimal(str(self.config.input_price_per_million))
+                / Decimal(1_000_000)
+            )
+            if input_cost > remaining_cost:
+                return (
+                    "cost ceiling cannot admit next prompt: "
+                    f"reserved input cost ${input_cost:.6f} > remaining ${remaining_cost:.6f}",
+                    None,
+                )
+            output_price = Decimal(str(self.config.output_price_per_million))
+            if output_price > 0:
+                affordable_output = int(
+                    (
+                        (remaining_cost - input_cost)
+                        * Decimal(1_000_000)
+                        / output_price
+                    ).to_integral_value(rounding=ROUND_FLOOR)
+                )
+                if affordable_output < 1:
+                    return "cost ceiling leaves no output allowance for next provider call", None
+                max_output_tokens = min(max_output_tokens, affordable_output)
+
+        return None, max_output_tokens
+
     def _record_usage(self, response: ModelResponse, messages: List[Dict[str, str]]) -> None:
         input_tokens = response.input_tokens
         output_tokens = response.output_tokens
@@ -455,10 +522,10 @@ class AutonomousEngine:
         usage["input_tokens"] += int(input_tokens)
         usage["output_tokens"] += int(output_tokens)
         added_cost = (
-            input_tokens * self.config.input_price_per_million
-            + output_tokens * self.config.output_price_per_million
-        ) / 1_000_000
-        usage["cost_usd"] = round(float(usage["cost_usd"]) + added_cost, 6)
+            Decimal(input_tokens) * Decimal(str(self.config.input_price_per_million))
+            + Decimal(output_tokens) * Decimal(str(self.config.output_price_per_million))
+        ) / Decimal(1_000_000)
+        usage["cost_usd"] = float(Decimal(str(usage["cost_usd"])) + added_cost)
 
     def _wait_for_scheduled_retry(self) -> None:
         if self.state.get("status") != "WAITING_RETRY":
@@ -472,10 +539,19 @@ class AutonomousEngine:
         self.state["retry"]["next_retry_at"] = None
         self._save()
 
-    def _complete_with_retry(self, messages: List[Dict[str, str]]) -> ModelResponse:
+    def _complete_with_retry(
+        self,
+        messages: List[Dict[str, str]],
+        *,
+        max_output_tokens: Optional[int],
+    ) -> ModelResponse:
         while True:
             try:
-                response = self.provider.complete(messages, temperature=0.1)
+                response = self.provider.complete(
+                    messages,
+                    temperature=0.1,
+                    max_output_tokens=max_output_tokens,
+                )
                 self.state["retry"]["consecutive_retries"] = 0
                 self.state["retry"]["next_retry_at"] = None
                 self.state["retry"]["first_retry_at"] = None
@@ -774,7 +850,20 @@ class AutonomousEngine:
             return
 
         messages = self._messages()
-        response = self._complete_with_retry(messages)
+        request_budget_reason, max_output_tokens = self._request_budget(messages)
+        if request_budget_reason:
+            self.state["status"] = "BUDGET_EXCEEDED"
+            self.state["last_error"] = request_budget_reason
+            self._record_event(
+                "budget_stop",
+                observation={"ok": False, "error": request_budget_reason},
+            )
+            self._save()
+            return
+        response = self._complete_with_retry(
+            messages,
+            max_output_tokens=max_output_tokens,
+        )
         self._record_usage(response, messages)
         self.state["step"] = int(self.state["step"]) + 1
         budget_reason = self._budget_reason()

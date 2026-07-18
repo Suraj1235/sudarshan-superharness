@@ -67,7 +67,7 @@ class TestSudarshanCLI(unittest.TestCase):
                             "api_key_env": "OLD_PROVIDER_KEY",
                             "timeout_seconds": 45,
                         },
-                        "engine": {"max_steps": 77},
+                        "engine": {"max_steps": 77, "max_output_per_call": 4096},
                     },
                     handle,
                 )
@@ -82,6 +82,7 @@ class TestSudarshanCLI(unittest.TestCase):
             self.assertIsNone(args.api_key_env)
             self.assertEqual(args.provider_timeout, 120.0)
             self.assertEqual(args.max_steps, 77)
+            self.assertEqual(args.max_output_per_call, 4096)
 
     def test_doctor_has_no_openclaw_docker_or_searxng_prerequisite(self):
         result = run_cli("doctor", "--json")
@@ -253,6 +254,8 @@ class TestSudarshanCLI(unittest.TestCase):
                 json.dumps([sys.executable, "-c", "raise SystemExit(0)"]),
                 "--max-new-steps",
                 "1",
+                "--max-output-per-call",
+                "2048",
                 "--allow-host-commands",
                 "--yes",
                 "--json",
@@ -270,6 +273,8 @@ class TestSudarshanCLI(unittest.TestCase):
             ) as handle:
                 run_config = json.load(handle)
             self.assertEqual(run_config["provider"]["kind"], "command")
+            self.assertEqual(run_config["engine"]["max_output_per_call"], 2048)
+            self.assertEqual(state["limits"]["max_output_tokens_per_call"], 2048)
 
     def test_checked_in_command_bridge_demo_completes_a_verified_build(self):
         bridge = os.path.join(ROOT, "examples", "demo_command_bridge.py")

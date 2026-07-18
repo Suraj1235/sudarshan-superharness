@@ -22,9 +22,11 @@ class ScriptedProvider:
     def __init__(self, outcomes):
         self.outcomes = list(outcomes)
         self.calls = []
+        self.call_options = []
 
-    def complete(self, messages, **_kwargs):
+    def complete(self, messages, **kwargs):
         self.calls.append(messages)
+        self.call_options.append(kwargs)
         outcome = self.outcomes.pop(0)
         if isinstance(outcome, Exception):
             raise outcome
@@ -92,6 +94,8 @@ class TestAutonomousEngine(unittest.TestCase):
     def test_engine_config_rejects_invalid_runtime_limits(self):
         with self.assertRaisesRegex(ValueError, "token ceilings"):
             self.config(max_input_tokens=-1)
+        with self.assertRaisesRegex(ValueError, "per-call output"):
+            self.config(max_output_tokens_per_call=0)
         with self.assertRaisesRegex(ValueError, "command timeout"):
             self.config(command_timeout_seconds=0)
 
@@ -281,7 +285,7 @@ class TestAutonomousEngine(unittest.TestCase):
         self.assertEqual(state["status"], "FAILED")
         self.assertIn("retry elapsed-time limit", state["last_error"])
 
-    def test_budget_stops_before_expensive_action_is_executed(self):
+    def test_noncompliant_provider_cannot_execute_action_after_budget_overshoot(self):
         provider = ScriptedProvider(
             [
                 action_response(
@@ -305,6 +309,106 @@ class TestAutonomousEngine(unittest.TestCase):
         self.assertEqual(state["status"], "BUDGET_EXCEEDED")
         self.assertFalse(os.path.exists(os.path.join(self.workspace, "should-not-exist.txt")))
         self.assertEqual(state["usage"]["cost_usd"], 10.0)
+        self.assertLess(provider.call_options[0]["max_output_tokens"], 1_000_000)
+
+    def test_remaining_output_budget_is_passed_to_provider(self):
+        provider = ScriptedProvider(
+            [
+                action_response({"action": "list_files", "path": "."}, output_tokens=4),
+                action_response({"action": "list_files", "path": "."}, output_tokens=4),
+            ]
+        )
+        engine = AutonomousEngine(self.config(max_output_tokens=10), provider)
+
+        state = engine.run(max_new_steps=2)
+
+        self.assertEqual(
+            [options["max_output_tokens"] for options in provider.call_options],
+            [10, 6],
+        )
+        self.assertEqual(state["usage"]["output_tokens"], 8)
+
+    def test_default_per_call_output_cap_is_passed_to_provider(self):
+        provider = ScriptedProvider([{"action": "list_files", "path": "."}])
+        engine = AutonomousEngine(self.config(), provider)
+
+        engine.run(max_new_steps=1)
+
+        self.assertEqual(provider.call_options[0]["max_output_tokens"], 8192)
+
+    def test_per_call_output_cap_limits_a_larger_cumulative_budget(self):
+        provider = ScriptedProvider([{"action": "list_files", "path": "."}])
+        engine = AutonomousEngine(
+            self.config(
+                max_output_tokens=100_000,
+                max_output_tokens_per_call=4096,
+            ),
+            provider,
+        )
+
+        engine.run(max_new_steps=1)
+
+        self.assertEqual(provider.call_options[0]["max_output_tokens"], 4096)
+
+    def test_per_call_cap_limits_a_large_affordable_cost_budget(self):
+        provider = ScriptedProvider([{"action": "list_files", "path": "."}])
+        engine = AutonomousEngine(
+            self.config(
+                max_cost_usd=100,
+                input_price_per_million=1,
+                output_price_per_million=4,
+            ),
+            provider,
+        )
+
+        engine.run(max_new_steps=1)
+
+        self.assertEqual(provider.call_options[0]["max_output_tokens"], 8192)
+
+    def test_input_budget_stops_before_oversized_prompt_is_sent(self):
+        provider = ScriptedProvider([{"action": "list_files", "path": "."}])
+        engine = AutonomousEngine(self.config(max_input_tokens=1), provider)
+
+        state = engine.run(max_new_steps=1)
+
+        self.assertEqual(state["status"], "BUDGET_EXCEEDED")
+        self.assertEqual(provider.calls, [])
+        self.assertEqual(state["usage"]["input_tokens"], 0)
+
+    def test_cost_budget_caps_provider_output_before_request(self):
+        provider = ScriptedProvider(
+            [action_response({"action": "list_files", "path": "."}, output_tokens=3)]
+        )
+        engine = AutonomousEngine(
+            self.config(
+                max_cost_usd=3,
+                input_price_per_million=0,
+                output_price_per_million=1_000_000,
+            ),
+            provider,
+        )
+
+        state = engine.run(max_new_steps=1)
+
+        self.assertEqual(provider.call_options[0]["max_output_tokens"], 3)
+        self.assertLessEqual(state["usage"]["cost_usd"], 3)
+
+    def test_cost_budget_stops_before_unaffordable_prompt_is_sent(self):
+        provider = ScriptedProvider([{"action": "list_files", "path": "."}])
+        engine = AutonomousEngine(
+            self.config(
+                max_cost_usd=1,
+                input_price_per_million=1_000_000,
+                output_price_per_million=0,
+            ),
+            provider,
+        )
+
+        state = engine.run(max_new_steps=1)
+
+        self.assertEqual(state["status"], "BUDGET_EXCEEDED")
+        self.assertEqual(provider.calls, [])
+        self.assertEqual(state["usage"]["cost_usd"], 0)
 
     def test_human_request_pauses_and_can_be_resumed(self):
         engine = AutonomousEngine(

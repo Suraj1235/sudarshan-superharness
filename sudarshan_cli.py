@@ -139,6 +139,7 @@ def _engine_config_from_args(args: argparse.Namespace, directive: str, model: st
         max_cost_usd=args.max_cost,
         max_input_tokens=args.max_input_tokens,
         max_output_tokens=args.max_output_tokens,
+        max_output_tokens_per_call=args.max_output_per_call,
         input_price_per_million=args.input_price,
         output_price_per_million=args.output_price,
         retry_initial_seconds=args.retry_initial,
@@ -192,6 +193,12 @@ def _add_runtime_arguments(parser: argparse.ArgumentParser, *, resume: bool = Fa
     parser.add_argument("--max-cost", type=float)
     parser.add_argument("--max-input-tokens", type=int)
     parser.add_argument("--max-output-tokens", type=int)
+    parser.add_argument(
+        "--max-output-per-call",
+        type=int,
+        default=default(8192),
+        help="Maximum output tokens requested from one provider call",
+    )
     parser.add_argument("--input-price", type=float, default=default(0.0))
     parser.add_argument("--output-price", type=float, default=default(0.0))
     parser.add_argument("--retry-initial", type=float, default=default(5.0))
@@ -263,6 +270,7 @@ def _save_run_config(
                 "max_cost": args.max_cost,
                 "max_input_tokens": args.max_input_tokens,
                 "max_output_tokens": args.max_output_tokens,
+                "max_output_per_call": args.max_output_per_call,
                 "input_price": args.input_price,
                 "output_price": args.output_price,
                 "retry_initial": args.retry_initial,
@@ -322,6 +330,7 @@ def _apply_saved_run_config(args: argparse.Namespace) -> None:
         "max_cost": engine.get("max_cost"),
         "max_input_tokens": engine.get("max_input_tokens"),
         "max_output_tokens": engine.get("max_output_tokens"),
+        "max_output_per_call": engine.get("max_output_per_call", 8192),
         "input_price": engine.get("input_price", 0.0),
         "output_price": engine.get("output_price", 0.0),
         "retry_initial": engine.get("retry_initial", 5.0),
@@ -535,6 +544,7 @@ def cmd_input(args: argparse.Namespace) -> int:
         max_cost_usd=runtime.get("max_cost_usd"),
         max_input_tokens=runtime.get("max_input_tokens"),
         max_output_tokens=runtime.get("max_output_tokens"),
+        max_output_tokens_per_call=int(runtime.get("max_output_tokens_per_call") or 8192),
     )
     engine = AutonomousEngine(config, _NoopProvider())
     engine.provide_human_input(args.value)
