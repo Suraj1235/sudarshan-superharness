@@ -6,6 +6,7 @@ from __future__ import annotations
 import math
 import os
 import signal
+import shutil
 import subprocess
 import threading
 from dataclasses import dataclass
@@ -20,6 +21,17 @@ class BoundedProcessResult:
     stderr: str
     stdout_truncated: bool
     stderr_truncated: bool
+
+
+def _resolve_argv(argv: Sequence[str], env: Optional[Dict[str, str]]) -> list[str]:
+    command = list(argv)
+    if os.name != "nt" or not command:
+        return command
+    environment = os.environ if env is None else env
+    resolved = shutil.which(command[0], path=environment.get("PATH"))
+    if resolved:
+        command[0] = resolved
+    return command
 
 
 class _Collector:
@@ -129,7 +141,7 @@ def run_bounded_process(
     else:
         popen_kwargs["start_new_session"] = True
 
-    process = subprocess.Popen(list(argv), **popen_kwargs)
+    process = subprocess.Popen(_resolve_argv(argv, env), **popen_kwargs)
     stdout_collector = _Collector(max_stdout_chars)
     stderr_collector = _Collector(max_stderr_chars)
     readers = [

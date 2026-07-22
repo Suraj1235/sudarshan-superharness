@@ -45,6 +45,26 @@ checkpointed builds and periodic retries. `--retry-forever` supports effectively
 unbounded retry duration until the operator interrupts it; no process has literal
 infinite runtime, and no token budget can make flawed requirements or verification safe.
 
+## Live Acceptance Artifact
+
+<p align="center">
+  <a href="https://suraj1235.github.io/orbit-shift/">
+    <img src="https://raw.githubusercontent.com/Suraj1235/orbit-shift/main/docs/assets/orbit-shift-gameplay.png" alt="ORBIT SHIFT, built through Sudarshan with Kimi-K2.7-Code" width="100%">
+  </a>
+</p>
+
+[ORBIT SHIFT](https://github.com/Suraj1235/orbit-shift) is a public end-to-end run of
+Sudarshan against `Kimi-K2.7-Code` through Azure Foundry. The run survived provider
+rate limits and process interruptions, repaired an initially failing test suite, and
+reached the verification-gated `COMPLETED` state after 121 accepted model actions.
+
+The model-authored artifact finished with 23 passing tests. An independent browser audit
+then found and repaired mobile touch, paused-input, impact-animation, and audio-feedback
+defects, bringing the release to 25 tests plus desktop/mobile Chromium checks. The run
+also exposed and drove fixes to Sudarshan's Azure JSON mode, failed-call token accounting,
+completion guidance, Windows atomic state replacement, and Windows command resolution.
+It is an acceptance artifact, not a universal model benchmark or production guarantee.
+
 ## The Working Journey
 
 ```mermaid
@@ -159,7 +179,7 @@ sudarshan resume --workspace ./builds/my-product
 
 | Route | CLI value | Default key variable | Typical use |
 |---|---|---|---|
-| OpenAI-compatible | `openai-compatible` | `SUDARSHAN_API_KEY` | OpenAI, OpenRouter, Groq, Together, DeepSeek, vLLM, LM Studio, Ollama, compatible gateways |
+| OpenAI-compatible | `openai-compatible` | `SUDARSHAN_API_KEY` | OpenAI, Azure Foundry, OpenRouter, Groq, Together, DeepSeek, vLLM, LM Studio, Ollama, compatible gateways |
 | Anthropic Messages API | `anthropic` | `ANTHROPIC_API_KEY` | Native Claude API |
 | Gemini generateContent | `gemini` | `GEMINI_API_KEY` | Native Google Gemini API |
 | Command bridge | `command` | Bridge-defined | Any local CLI, agent framework, SDK wrapper, or custom inference stack |
@@ -179,6 +199,26 @@ export GEMINI_API_KEY="your-key"
 sudarshan build --idea "Build a tested inventory API" --workspace ./builds/api \
   --provider gemini --model YOUR_GEMINI_MODEL --allow-host-commands
 ```
+
+### Azure Foundry Model Inference
+
+Keep the base URL query-free and pass the version separately so Sudarshan can validate
+and encode it safely:
+
+```bash
+export AZURE_FOUNDRY_KEY="your-key"
+sudarshan build --spec ./SPEC.md --workspace ./builds/azure-app \
+  --provider openai-compatible \
+  --base-url https://YOUR_RESOURCE.services.ai.azure.com/models \
+  --api-version 2024-05-01-preview \
+  --json-response \
+  --api-key-env AZURE_FOUNDRY_KEY \
+  --model YOUR_DEPLOYED_MODEL \
+  --allow-host-commands
+```
+
+`--json-response` asks compatible endpoints to enforce a single JSON object with
+`response_format`. Leave it off for providers that do not implement that extension.
 
 ### Free Or Local Models
 

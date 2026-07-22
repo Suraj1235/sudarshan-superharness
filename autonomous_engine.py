@@ -26,6 +26,8 @@ from safe_edit import LockRefresher, acquire_lock, release_lock
 
 ENGINE_SCHEMA_VERSION = 1
 TERMINAL_STATUSES = {"COMPLETED", "FAILED", "BUDGET_EXCEEDED", "MAX_STEPS"}
+STATE_REPLACE_ATTEMPTS = 50
+STATE_REPLACE_DELAY_SECONDS = 0.02
 SUPPORTED_ACTIONS = {
     "delete_file",
     "edit_file",
@@ -71,6 +73,8 @@ Rules:
   command is stale after relevant code changes; rerun verification before finish.
 - Use argument arrays; shell strings are invalid.
 - Never claim success from inspection alone. Run the declared verification commands.
+- The finish action reruns operator-required verification. After a green verification with no
+  relevant file changes, mark final plan tasks done and call finish instead of repeating checks.
 - Keep all paths relative to the workspace.
 - Mark every plan item done before finish.
 - If a tool fails, analyze the observation and repair the cause.
@@ -289,7 +293,14 @@ class _StateStore:
                 handle.write("\n")
                 handle.flush()
                 os.fsync(handle.fileno())
-            os.replace(temp_name, self.state_path)
+            for attempt in range(STATE_REPLACE_ATTEMPTS):
+                try:
+                    os.replace(temp_name, self.state_path)
+                    break
+                except PermissionError:
+                    if attempt + 1 >= STATE_REPLACE_ATTEMPTS:
+                        raise
+                    time.sleep(STATE_REPLACE_DELAY_SECONDS)
         finally:
             if temp_name and os.path.exists(temp_name):
                 os.unlink(temp_name)
@@ -425,6 +436,13 @@ class AutonomousEngine:
             "max_steps": self.config.max_steps,
             "plan": self.state["plan"],
             "verification_commands": self.state["verification_commands"],
+            "completion_policy": {
+                "required_verification_commands": self.state.get(
+                    "required_verification_commands", []
+                ),
+                "finish_reverifies_commands": True,
+                "do_not_repeat_unchanged_successful_verification": True,
+            },
             "usage": self.state["usage"],
             "workspace": self.tools.list_files(max_entries=300),
             "recent_events": self.state["recent_events"],
@@ -558,6 +576,17 @@ class AutonomousEngine:
                 self.state["retry"]["last_error"] = None
                 return response
             except ProviderError as exc:
+                if exc.input_tokens or exc.output_tokens:
+                    self._record_usage(
+                        ModelResponse(
+                            text="",
+                            input_tokens=exc.input_tokens,
+                            output_tokens=exc.output_tokens,
+                            provider="failed-call",
+                            model=self.config.model,
+                        ),
+                        messages,
+                    )
                 if not exc.retryable:
                     raise
                 retry = self.state["retry"]
@@ -597,6 +626,8 @@ class AutonomousEngine:
                         "ok": False,
                         "status_code": exc.status_code,
                         "error": str(exc)[:1000],
+                        "input_tokens": exc.input_tokens,
+                        "output_tokens": exc.output_tokens,
                         "wait_seconds": wait_seconds,
                         "attempt": consecutive,
                     },

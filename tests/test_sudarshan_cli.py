@@ -84,6 +84,59 @@ class TestSudarshanCLI(unittest.TestCase):
             self.assertEqual(args.max_steps, 77)
             self.assertEqual(args.max_output_per_call, 4096)
 
+    def test_resume_restores_openai_compatible_api_version(self):
+        with tempfile.TemporaryDirectory() as workspace:
+            state_dir = os.path.join(workspace, ".sudarshan")
+            os.makedirs(state_dir)
+            with open(
+                os.path.join(state_dir, "run_config.json"), "w", encoding="utf-8"
+            ) as handle:
+                json.dump(
+                    {
+                        "schema_version": 1,
+                        "provider": {
+                            "kind": "openai-compatible",
+                            "base_url": "https://example.com/models",
+                            "api_version": "2024-05-01-preview",
+                            "api_key_env": "AZURE_FOUNDRY_KEY",
+                            "timeout_seconds": 90,
+                        },
+                        "engine": {},
+                    },
+                    handle,
+                )
+            args = build_parser().parse_args(["resume", "--workspace", workspace])
+
+            _apply_saved_run_config(args)
+
+            self.assertEqual(args.api_version, "2024-05-01-preview")
+
+    def test_resume_restores_openai_compatible_json_response_mode(self):
+        with tempfile.TemporaryDirectory() as workspace:
+            state_dir = os.path.join(workspace, ".sudarshan")
+            os.makedirs(state_dir)
+            with open(
+                os.path.join(state_dir, "run_config.json"), "w", encoding="utf-8"
+            ) as handle:
+                json.dump(
+                    {
+                        "schema_version": 1,
+                        "provider": {
+                            "kind": "openai-compatible",
+                            "base_url": "https://example.com/v1",
+                            "json_response": True,
+                            "api_key_env": "MODEL_KEY",
+                        },
+                        "engine": {},
+                    },
+                    handle,
+                )
+            args = build_parser().parse_args(["resume", "--workspace", workspace])
+
+            _apply_saved_run_config(args)
+
+            self.assertTrue(args.json_response)
+
     def test_doctor_has_no_openclaw_docker_or_searxng_prerequisite(self):
         result = run_cli("doctor", "--json")
         self.assertEqual(result.returncode, 0, result.stderr)

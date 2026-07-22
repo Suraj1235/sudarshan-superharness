@@ -91,6 +91,65 @@ class TestOpenAICompatibleProvider(unittest.TestCase):
         self.assertEqual(request["headers"]["Authorization"], "Bearer secret-value")
         self.assertNotIn("secret-value", repr(provider))
 
+    def test_appends_a_valid_api_version_to_the_chat_endpoint(self):
+        _ProviderHandler.responses.append(
+            (
+                200,
+                {},
+                {
+                    "choices": [{"message": {"content": '{"action":"list_files"}'}}],
+                    "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+                },
+            )
+        )
+        provider = OpenAICompatibleProvider(
+            api_key="secret-value",
+            base_url=self.base_url,
+            model="test-model",
+            api_version="2024-05-01-preview",
+        )
+
+        provider.complete([{"role": "user", "content": "hello"}])
+
+        self.assertEqual(
+            _ProviderHandler.requests[0]["path"],
+            "/v1/chat/completions?api-version=2024-05-01-preview",
+        )
+
+    def test_rejects_api_version_query_injection(self):
+        with self.assertRaisesRegex(ValueError, "api_version"):
+            OpenAICompatibleProvider(
+                api_key="key",
+                base_url="https://example.com/v1",
+                model="test-model",
+                api_version="2024-05-01-preview&api-key=secret",
+            )
+
+    def test_requests_a_single_json_object_when_json_response_is_enabled(self):
+        _ProviderHandler.responses.append(
+            (
+                200,
+                {},
+                {
+                    "choices": [{"message": {"content": '{"action":"list_files"}'}}],
+                    "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+                },
+            )
+        )
+        provider = OpenAICompatibleProvider(
+            api_key="secret-value",
+            base_url=self.base_url,
+            model="test-model",
+            json_response=True,
+        )
+
+        provider.complete([{"role": "user", "content": "hello"}])
+
+        self.assertEqual(
+            _ProviderHandler.requests[0]["body"]["response_format"],
+            {"type": "json_object"},
+        )
+
     def test_rate_limit_is_retryable_and_honors_retry_after(self):
         _ProviderHandler.responses.append(
             (429, {"Retry-After": "7"}, {"error": {"message": "slow down secret-value"}})
@@ -131,6 +190,37 @@ class TestOpenAICompatibleProvider(unittest.TestCase):
 
         self.assertFalse(raised.exception.retryable)
         self.assertIn("malformed", str(raised.exception).lower())
+
+    def test_empty_length_limited_reasoning_response_is_retryable(self):
+        _ProviderHandler.responses.append(
+            (
+                200,
+                {},
+                {
+                    "choices": [
+                        {
+                            "finish_reason": "length",
+                            "message": {
+                                "content": "",
+                                "reasoning_content": "still reasoning",
+                            },
+                        }
+                    ],
+                    "usage": {"prompt_tokens": 20, "completion_tokens": 100},
+                },
+            )
+        )
+        provider = OpenAICompatibleProvider(
+            api_key="key", base_url=self.base_url, model="reasoning-model"
+        )
+
+        with self.assertRaises(ProviderError) as raised:
+            provider.complete([{"role": "user", "content": "hello"}])
+
+        self.assertTrue(raised.exception.retryable)
+        self.assertIn("output limit", str(raised.exception).lower())
+        self.assertEqual(raised.exception.input_tokens, 20)
+        self.assertEqual(raised.exception.output_tokens, 100)
 
     def test_response_body_is_bounded(self):
         _ProviderHandler.responses.append((200, {}, b"{" + (b"x" * 500) + b"}"))

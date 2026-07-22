@@ -12,7 +12,7 @@ import urllib.request
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
 from typing import Dict, List, Optional, Protocol, Sequence
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlencode, urlparse
 
 from process_runner import run_bounded_process
 
@@ -47,6 +47,8 @@ class ProviderError(RuntimeError):
         status_code: Optional[int] = None,
         retryable: bool = False,
         retry_after_seconds: Optional[float] = None,
+        input_tokens: int = 0,
+        output_tokens: int = 0,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
@@ -58,6 +60,14 @@ class ProviderError(RuntimeError):
         self.retry_after_seconds = (
             delay if delay is not None and math.isfinite(delay) and delay >= 0 else None
         )
+        try:
+            self.input_tokens = max(0, int(input_tokens))
+        except (TypeError, ValueError, OverflowError):
+            self.input_tokens = 0
+        try:
+            self.output_tokens = max(0, int(output_tokens))
+        except (TypeError, ValueError, OverflowError):
+            self.output_tokens = 0
 
 
 _TRANSIENT_STATUS_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
@@ -166,6 +176,8 @@ class OpenAICompatibleProvider:
         api_key: str,
         base_url: str,
         model: str,
+        api_version: Optional[str] = None,
+        json_response: bool = False,
         timeout_seconds: float = 120.0,
         extra_headers: Optional[Dict[str, str]] = None,
         max_response_bytes: int = 4_000_000,
@@ -176,10 +188,22 @@ class OpenAICompatibleProvider:
             raise ValueError("timeout_seconds must be positive and finite")
         if max_response_bytes < 1:
             raise ValueError("timeout_seconds and max_response_bytes must be positive")
+        if api_version is not None and (
+            not isinstance(api_version, str)
+            or not api_version
+            or any(
+                character
+                not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+                for character in api_version
+            )
+        ):
+            raise ValueError("api_version must contain only letters, digits, dots, underscores, and hyphens")
 
         self.api_key = api_key or ""
         self.base_url = _validate_http_base_url(base_url)
         self.model = model
+        self.api_version = api_version
+        self.json_response = bool(json_response)
         self.timeout_seconds = float(timeout_seconds)
         self.extra_headers = dict(extra_headers or {})
         self.max_response_bytes = int(max_response_bytes)
@@ -193,8 +217,12 @@ class OpenAICompatibleProvider:
     @property
     def endpoint(self) -> str:
         if self.base_url.endswith("/chat/completions"):
-            return self.base_url
-        return f"{self.base_url}/chat/completions"
+            endpoint = self.base_url
+        else:
+            endpoint = f"{self.base_url}/chat/completions"
+        if self.api_version:
+            return f"{endpoint}?{urlencode({'api-version': self.api_version})}"
+        return endpoint
 
     def _safe_message(self, value: str) -> str:
         message = value or "provider request failed"
@@ -228,6 +256,8 @@ class OpenAICompatibleProvider:
         }
         if max_output_tokens is not None:
             payload["max_tokens"] = int(max_output_tokens)
+        if self.json_response:
+            payload["response_format"] = {"type": "json_object"}
 
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
         if self.api_key:
@@ -267,19 +297,27 @@ class OpenAICompatibleProvider:
 
         try:
             data = json.loads(raw.decode("utf-8"))
-            message = data["choices"][0]["message"]
+            choice = data["choices"][0]
+            message = choice["message"]
             content = message["content"]
-            if isinstance(content, list):
-                content = "".join(
-                    str(item.get("text", "")) for item in content if isinstance(item, dict)
-                )
-            if not isinstance(content, str) or not content.strip():
-                raise ValueError("empty content")
             usage = data.get("usage") or {}
             input_tokens = int(usage.get("prompt_tokens", usage.get("input_tokens", 0)) or 0)
             output_tokens = int(
                 usage.get("completion_tokens", usage.get("output_tokens", 0)) or 0
             )
+            if isinstance(content, list):
+                content = "".join(
+                    str(item.get("text", "")) for item in content if isinstance(item, dict)
+                )
+            if not isinstance(content, str) or not content.strip():
+                if choice.get("finish_reason") == "length":
+                    raise ProviderError(
+                        "provider exhausted the output limit before returning visible content",
+                        retryable=True,
+                        input_tokens=input_tokens,
+                        output_tokens=output_tokens,
+                    )
+                raise ValueError("empty content")
         except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as exc:
             raise ProviderError(
                 f"Malformed provider response: {type(exc).__name__}", retryable=False

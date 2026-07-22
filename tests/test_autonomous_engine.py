@@ -4,12 +4,14 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest import mock
 
 from autonomous_engine import (
     ActionValidationError,
     AutonomousEngine,
     EngineConfig,
     EngineBusyError,
+    _StateStore,
     parse_action,
 )
 from providers import ModelResponse, ProviderError
@@ -98,6 +100,43 @@ class TestAutonomousEngine(unittest.TestCase):
             self.config(max_output_tokens_per_call=0)
         with self.assertRaisesRegex(ValueError, "command timeout"):
             self.config(command_timeout_seconds=0)
+
+    def test_model_snapshot_exposes_operator_completion_policy(self):
+        engine = AutonomousEngine(
+            self.config(required_verification_commands=(("node", "--test"),)),
+            ScriptedProvider([]),
+        )
+
+        snapshot = json.loads(engine._messages()[1]["content"].split("\n", 1)[1])
+
+        self.assertEqual(
+            snapshot["completion_policy"]["required_verification_commands"],
+            [["node", "--test"]],
+        )
+        self.assertTrue(snapshot["completion_policy"]["finish_reverifies_commands"])
+        self.assertTrue(
+            snapshot["completion_policy"]["do_not_repeat_unchanged_successful_verification"]
+        )
+
+    def test_state_store_retries_a_transient_permission_error(self):
+        store = _StateStore(self.workspace)
+        real_replace = os.replace
+        attempts = []
+
+        def flaky_replace(source, destination):
+            attempts.append((source, destination))
+            if len(attempts) == 1:
+                raise PermissionError("temporarily locked")
+            return real_replace(source, destination)
+
+        with mock.patch("autonomous_engine.os.replace", side_effect=flaky_replace), mock.patch(
+            "autonomous_engine.time.sleep"
+        ) as sleep:
+            store.save({"status": "RUNNING", "step": 8})
+
+        self.assertEqual(len(attempts), 2)
+        sleep.assert_called_once()
+        self.assertEqual(store.load(), {"status": "RUNNING", "step": 8})
 
     def test_checkpoints_plan_after_each_step(self):
         provider = ScriptedProvider(
@@ -223,6 +262,28 @@ class TestAutonomousEngine(unittest.TestCase):
         self.assertEqual(waits, [7.0])
         self.assertEqual(state["status"], "RUNNING")
         self.assertEqual(state["retry"]["total_retries"], 1)
+
+    def test_retryable_provider_usage_is_counted_before_retry(self):
+        provider = ScriptedProvider(
+            [
+                ProviderError(
+                    "output limit",
+                    retryable=True,
+                    input_tokens=20,
+                    output_tokens=100,
+                ),
+                {
+                    "action": "set_plan",
+                    "tasks": [{"id": "T1", "description": "Recover", "status": "pending"}],
+                },
+            ]
+        )
+        engine = AutonomousEngine(self.config(), provider, sleep=lambda _seconds: None)
+
+        state = engine.run(max_new_steps=1)
+
+        self.assertEqual(state["usage"]["input_tokens"], 120)
+        self.assertEqual(state["usage"]["output_tokens"], 125)
 
     def test_provider_retry_after_is_not_shortened_by_local_backoff_cap(self):
         waits = []

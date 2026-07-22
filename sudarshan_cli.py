@@ -123,6 +123,8 @@ def _provider_from_args(args: argparse.Namespace, model: str):
         api_key=api_key,
         base_url=base_url,
         model=model,
+        api_version=args.api_version,
+        json_response=bool(args.json_response),
         timeout_seconds=args.provider_timeout,
     )
 
@@ -174,6 +176,16 @@ def _add_provider_arguments(parser: argparse.ArgumentParser, *, resume: bool = F
         default=None if resume else "openai-compatible",
     )
     parser.add_argument("--base-url", help="Provider API base URL")
+    parser.add_argument(
+        "--api-version",
+        help="Optional API version query value for OpenAI-compatible endpoints",
+    )
+    parser.add_argument(
+        "--json-response",
+        action="store_true",
+        default=None if resume else False,
+        help="Request one JSON object from OpenAI-compatible endpoints",
+    )
     parser.add_argument(
         "--api-key-env",
         default=None,
@@ -260,6 +272,10 @@ def _save_run_config(
             "api_key_env": args.api_key_env or default_key_name,
             "timeout_seconds": provider.timeout_seconds,
         }
+        if isinstance(provider, OpenAICompatibleProvider) and provider.api_version:
+            provider_config["api_version"] = provider.api_version
+        if isinstance(provider, OpenAICompatibleProvider) and provider.json_response:
+            provider_config["json_response"] = True
     _write_json_atomic(
         workspace / ".sudarshan" / "run_config.json",
         {
@@ -307,6 +323,8 @@ def _apply_saved_run_config(args: argparse.Namespace) -> None:
     provider_defaults = {
         "provider": args.provider if provider_changed else saved_kind,
         "base_url": None if provider_changed else provider.get("base_url"),
+        "api_version": None if provider_changed else provider.get("api_version"),
+        "json_response": False if provider_changed else provider.get("json_response", False),
         "api_key_env": (
             None
             if provider_changed
