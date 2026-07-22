@@ -72,6 +72,7 @@
     "openclaw_plugins/patch_identity.json"
   ],
   "required_bundle_directories": [
+    "docs/assets",
     "skills",
     "infrastructure",
     "templates"

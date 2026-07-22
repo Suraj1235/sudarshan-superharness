@@ -56,6 +56,25 @@ jobs:
         shell: bash
         run: |
           python -m pip wheel . --no-deps --wheel-dir "$RUNNER_TEMP/wheels"
+          wheel="$(find "$RUNNER_TEMP/wheels" -name '*.whl' -print -quit)"
+          python - "$wheel" <<'PY'
+          import sys
+          import zipfile
+
+          with zipfile.ZipFile(sys.argv[1]) as archive:
+              names = archive.namelist()
+
+          forbidden = [name for name in names if "__pycache__" in name or name.endswith((".pyc", ".pyo"))]
+          required = {
+              "sudarshan_assets/docs/assets/sudarshan-adversarial-hierarchy.svg",
+              "sudarshan_assets/docs/assets/sudarshan-control-plane.svg",
+              "sudarshan_assets/docs/assets/sudarshan-orchestration-banner.png",
+              "sudarshan_assets/docs/assets/sudarshan-phase-machine.svg",
+          }
+          missing = sorted(required.difference(names))
+          if forbidden or missing:
+              raise SystemExit(f"wheel hygiene failed: forbidden={forbidden}, missing={missing}")
+          PY
           python -m venv "$RUNNER_TEMP/sudarshan-smoke"
           "$RUNNER_TEMP/sudarshan-smoke/bin/python" -m pip install \
             --no-index --find-links "$RUNNER_TEMP/wheels" sudarshan-superharness

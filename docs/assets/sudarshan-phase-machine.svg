@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="590" viewBox="0 0 1600 590" role="img" aria-labelledby="title desc">
+  <title id="title">Sudarshan V16.9 phase and gate machine</title>
+  <desc id="desc">The historical six-phase software factory advances from research through contracts, execution, continuous integration, end-to-end integration, and delivery, with deterministic gates and an escalation loop.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#405653"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c43d31"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-15%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#18312e" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="590" fill="#f7f8f6"/>
+  <rect x="36" y="32" width="1528" height="526" rx="8" fill="#ffffff" stroke="#dce3e0"/>
+  <text x="86" y="90" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#b7791f">THE V16.9 FACTORY STATE MACHINE</text>
+  <text x="86" y="131" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#14201f">No phase advances on confidence alone</text>
+  <text x="86" y="165" font-family="Arial, sans-serif" font-size="17" fill="#596765">Historical host profile: schemas are written by agents; gates are evaluated by deterministic tools.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="78" y="218" width="210" height="160" rx="6" fill="#eff8fb" stroke="#55a8bb"/>
+    <rect x="326" y="218" width="210" height="160" rx="6" fill="#fffaf0" stroke="#d5a24c"/>
+    <rect x="574" y="218" width="210" height="160" rx="6" fill="#eef8f7" stroke="#7db7b0"/>
+    <rect x="822" y="218" width="210" height="160" rx="6" fill="#fff0ee" stroke="#d9776d"/>
+    <rect x="1070" y="218" width="210" height="160" rx="6" fill="#f6f0f8" stroke="#a67ab2"/>
+    <rect x="1318" y="218" width="210" height="160" rx="6" fill="#edf8f1" stroke="#5ba87b"/>
+  </g>
+
+  <circle cx="111" cy="252" r="19" fill="#0e7490"/>
+  <circle cx="359" cy="252" r="19" fill="#b7791f"/>
+  <circle cx="607" cy="252" r="19" fill="#168a55"/>
+  <circle cx="855" cy="252" r="19" fill="#c43d31"/>
+  <circle cx="1103" cy="252" r="19" fill="#83518f"/>
+  <circle cx="1351" cy="252" r="19" fill="#168a55"/>
+  <text x="111" y="259" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">0</text>
+  <text x="359" y="259" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">1</text>
+  <text x="607" y="259" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">2</text>
+  <text x="855" y="259" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">3</text>
+  <text x="1103" y="259" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">4</text>
+  <text x="1351" y="259" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">5</text>
+
+  <text x="183" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#0e5d70">Research</text>
+  <text x="431" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#5d4318">Contract</text>
+  <text x="679" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#145a3a">Execute</text>
+  <text x="940" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#9e332a">CI / Red Team</text>
+  <text x="1175" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#70427b">Integrate</text>
+  <text x="1423" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#145a3a">Deliver</text>
+
+  <text x="101" y="298" font-family="Arial, sans-serif" font-size="14" fill="#356672">manifest + constraints</text>
+  <text x="101" y="322" font-family="Arial, sans-serif" font-size="14" fill="#356672">Judge Probe verdict</text>
+  <text x="101" y="346" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#0e5d70">G0: evidence coverage</text>
+
+  <text x="349" y="298" font-family="Arial, sans-serif" font-size="14" fill="#6d5c3e">pre-mortem + DAG</text>
+  <text x="349" y="322" font-family="Arial, sans-serif" font-size="14" fill="#6d5c3e">OpenAPI + UI spec</text>
+  <text x="349" y="346" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#5d4318">G1-G4b: contracts</text>
+
+  <text x="597" y="298" font-family="Arial, sans-serif" font-size="14" fill="#38664d">validated DAG waves</text>
+  <text x="597" y="322" font-family="Arial, sans-serif" font-size="14" fill="#38664d">scoped worker context</text>
+  <text x="597" y="346" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#145a3a">locks + state updates</text>
+
+  <text x="845" y="298" font-family="Arial, sans-serif" font-size="14" fill="#7c4b47">tests + security audit</text>
+  <text x="845" y="322" font-family="Arial, sans-serif" font-size="14" fill="#7c4b47">autopsy + escalation</text>
+  <text x="845" y="346" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#9e332a">GREEN LIGHT only</text>
+
+  <text x="1093" y="298" font-family="Arial, sans-serif" font-size="14" fill="#76567d">real services, no mocks</text>
+  <text x="1093" y="322" font-family="Arial, sans-serif" font-size="14" fill="#76567d">frontend + API + DB</text>
+  <text x="1093" y="346" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#70427b">true E2E gate</text>
+
+  <text x="1341" y="298" font-family="Arial, sans-serif" font-size="14" fill="#38664d">cleanup + invoice</text>
+  <text x="1341" y="322" font-family="Arial, sans-serif" font-size="14" fill="#38664d">screenshots + report</text>
+  <text x="1341" y="346" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#145a3a">TASK_COMPLETE</text>
+
+  <line x1="288" y1="298" x2="326" y2="298" stroke="#405653" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="536" y1="298" x2="574" y2="298" stroke="#405653" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="784" y1="298" x2="822" y2="298" stroke="#405653" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="1032" y1="298" x2="1070" y2="298" stroke="#405653" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="1280" y1="298" x2="1318" y2="298" stroke="#405653" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="286" y="430" width="1028" height="70" rx="6" fill="#fff0ee" stroke="#d9776d"/>
+  <text x="318" y="459" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#9e332a">FAILURE PATH</text>
+  <text x="318" y="484" font-family="Arial, sans-serif" font-size="14" fill="#7c4b47">record strike  -  bounded repair  -  Staff Engineer after repeated failure  -  Observer/HaaS at the macro ceiling  -  resume from serialized state</text>
+  <path d="M927 378 C927 410 895 430 868 430" fill="none" stroke="#c43d31" stroke-width="3" marker-end="url(#arrow-red)"/>
+  <path d="M1175 378 C1175 410 1143 430 1116 430" fill="none" stroke="#c43d31" stroke-width="3" marker-end="url(#arrow-red)"/>
+  <path d="M286 465 C198 465 182 407 182 378" fill="none" stroke="#c43d31" stroke-width="3" stroke-dasharray="8 6" marker-end="url(#arrow-red)"/>
+
+  <text x="86" y="532" font-family="Arial, sans-serif" font-size="13" fill="#74817f">The current standalone engine compresses this philosophy into a provider-neutral plan-act-observe loop with immutable verification and durable checkpoints.</text>
+</svg>

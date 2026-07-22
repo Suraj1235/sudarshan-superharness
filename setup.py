@@ -20,6 +20,11 @@ class BuildPyWithAssets(build_py):
         target = Path(self.build_lib) / "sudarshan_assets"
         target.mkdir(parents=True, exist_ok=True)
 
+        for compiled in (*target.rglob("*.pyc"), *target.rglob("*.pyo")):
+            compiled.unlink()
+        for cache_dir in sorted(target.rglob("__pycache__"), reverse=True):
+            shutil.rmtree(cache_dir)
+
         root_files = set(manifest.get("required_root_files", []))
         root_files.update({"VERSION", "install_manifest.json", "LICENSE", "README.md"})
         for relative in sorted(root_files):
@@ -34,7 +39,12 @@ class BuildPyWithAssets(build_py):
         for relative in sorted(bundle_directories):
             source = ROOT / relative
             if source.is_dir():
-                shutil.copytree(source, target / relative, dirs_exist_ok=True)
+                shutil.copytree(
+                    source,
+                    target / relative,
+                    dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+                )
 
         for relative in manifest.get("required_openclaw_plugin_files", []):
             source = ROOT / relative

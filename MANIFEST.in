@@ -13,5 +13,8 @@ recursive-include skills *
 recursive-include infrastructure *
 recursive-include openclaw_plugins *
 recursive-include sudarshan_assets *
-recursive-include docs/assets *.png
+recursive-include docs/assets *.png *.svg
 recursive-include examples *
+prune sudarshan_assets/__pycache__
+global-exclude *.pyc
+global-exclude *.pyo

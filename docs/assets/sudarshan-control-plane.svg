@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="720" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Sudarshan standalone control plane</title>
+  <desc id="desc">Ideas, product requirements, and specifications enter a provider-neutral engine. Model actions pass through schema, policy, durable state, budgets, and verification before a completed workspace is accepted.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#38504d"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c43d31"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-15%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#18312e" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="720" fill="#f7f8f6"/>
+  <rect x="36" y="32" width="1528" height="656" rx="8" fill="#ffffff" stroke="#dce3e0"/>
+
+  <text x="86" y="92" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0e7490">THE STANDALONE CONTROL PLANE</text>
+  <text x="86" y="132" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#14201f">Durable state outside the chat. Deterministic gates outside the model.</text>
+  <text x="86" y="166" font-family="Arial, sans-serif" font-size="18" fill="#596765">Canonical execution path in Sudarshan 16.9.2</text>
+
+  <text x="86" y="224" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#596765">INTENT</text>
+  <g filter="url(#shadow)">
+    <rect x="86" y="246" width="184" height="58" rx="6" fill="#eef8f7" stroke="#7db7b0"/>
+    <rect x="86" y="320" width="184" height="58" rx="6" fill="#eef8f7" stroke="#7db7b0"/>
+    <rect x="86" y="394" width="184" height="58" rx="6" fill="#eef8f7" stroke="#7db7b0"/>
+  </g>
+  <text x="178" y="282" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#143b38">Idea</text>
+  <text x="178" y="356" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#143b38">PRD</text>
+  <text x="178" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#143b38">Specification</text>
+
+  <line x1="270" y1="349" x2="338" y2="349" stroke="#38504d" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="356" y="224" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#596765">PREFLIGHT</text>
+  <g filter="url(#shadow)">
+    <rect x="338" y="246" width="240" height="206" rx="6" fill="#fffaf0" stroke="#d5a24c"/>
+  </g>
+  <circle cx="380" cy="288" r="18" fill="#b7791f"/>
+  <text x="380" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff">1</text>
+  <text x="412" y="294" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#4b3513">Estimate</text>
+  <line x1="370" y1="320" x2="546" y2="320" stroke="#ead8b5"/>
+  <text x="370" y="351" font-family="Arial, sans-serif" font-size="16" fill="#5f513a">Token / cost range</text>
+  <text x="370" y="382" font-family="Arial, sans-serif" font-size="16" fill="#5f513a">Provider readiness</text>
+  <text x="370" y="413" font-family="Arial, sans-serif" font-size="16" fill="#5f513a">Operator authorization</text>
+
+  <line x1="578" y1="349" x2="646" y2="349" stroke="#38504d" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="664" y="224" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#596765">PROBABILISTIC BOUNDARY</text>
+  <g filter="url(#shadow)">
+    <rect x="646" y="246" width="280" height="206" rx="6" fill="#eff8fb" stroke="#55a8bb"/>
+  </g>
+  <text x="786" y="287" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#0e5d70">Provider adapter</text>
+  <rect x="676" y="310" width="220" height="31" rx="5" fill="#dceff4"/>
+  <rect x="676" y="350" width="220" height="31" rx="5" fill="#dceff4"/>
+  <rect x="676" y="390" width="104" height="31" rx="5" fill="#dceff4"/>
+  <rect x="792" y="390" width="104" height="31" rx="5" fill="#dceff4"/>
+  <text x="786" y="331" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#174c59">OpenAI-compatible / Azure</text>
+  <text x="786" y="371" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#174c59">Anthropic / Gemini</text>
+  <text x="728" y="411" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#174c59">Local</text>
+  <text x="844" y="411" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#174c59">Bridge</text>
+
+  <line x1="926" y1="349" x2="994" y2="349" stroke="#38504d" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="1012" y="224" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#596765">DETERMINISTIC BOUNDARY</text>
+  <g filter="url(#shadow)">
+    <rect x="994" y="246" width="300" height="206" rx="6" fill="#143b38" stroke="#143b38"/>
+  </g>
+  <text x="1144" y="286" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#ffffff">AutonomousEngine</text>
+  <rect x="1024" y="310" width="74" height="74" rx="6" fill="#ffffff" fill-opacity="0.10" stroke="#81b8b1"/>
+  <rect x="1107" y="310" width="74" height="74" rx="6" fill="#ffffff" fill-opacity="0.10" stroke="#81b8b1"/>
+  <rect x="1190" y="310" width="74" height="74" rx="6" fill="#ffffff" fill-opacity="0.10" stroke="#81b8b1"/>
+  <text x="1061" y="341" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff">PLAN</text>
+  <text x="1061" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbe0dd">immutable</text>
+  <text x="1144" y="341" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff">ACT</text>
+  <text x="1144" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbe0dd">one JSON</text>
+  <text x="1227" y="341" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff">OBSERVE</text>
+  <text x="1227" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbe0dd">bounded</text>
+  <text x="1144" y="421" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#d9ebe8">schema + policy + lease + budgets</text>
+
+  <line x1="1294" y1="349" x2="1362" y2="349" stroke="#38504d" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="1380" y="224" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#596765">ACCEPTANCE</text>
+  <g filter="url(#shadow)">
+    <rect x="1362" y="246" width="150" height="206" rx="6" fill="#edf8f1" stroke="#5ba87b"/>
+  </g>
+  <circle cx="1437" cy="300" r="28" fill="#168a55"/>
+  <path d="M1423 300 l10 10 l20 -23" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1437" y="355" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#145a3a">Quality gate</text>
+  <text x="1437" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#38664d">compile</text>
+  <text x="1437" y="407" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#38664d">test / lint</text>
+  <text x="1437" y="429" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#38664d">operator checks</text>
+
+  <rect x="338" y="506" width="956" height="118" rx="6" fill="#f0f3f2" stroke="#cbd6d3"/>
+  <text x="370" y="541" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#596765">DURABLE MEMORY</text>
+  <rect x="370" y="559" width="250" height="38" rx="5" fill="#ffffff" stroke="#cbd6d3"/>
+  <rect x="637" y="559" width="250" height="38" rx="5" fill="#ffffff" stroke="#cbd6d3"/>
+  <rect x="904" y="559" width="358" height="38" rx="5" fill="#ffffff" stroke="#cbd6d3"/>
+  <text x="495" y="584" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#314744">engine_state.json</text>
+  <text x="762" y="584" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#314744">events.jsonl</text>
+  <text x="1083" y="584" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#314744">run_config.json + completion report</text>
+  <line x1="1144" y1="452" x2="1144" y2="506" stroke="#38504d" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <path d="M1437 452 C1437 656 946 662 842 624" fill="none" stroke="#c43d31" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#arrow-red)"/>
+  <text x="1318" y="646" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#a83229">fail: checkpoint, repair, retry, or pause</text>
+  <text x="86" y="653" font-family="Arial, sans-serif" font-size="14" fill="#74817f">The model proposes. The harness decides what may execute, what survives, and what counts as done.</text>
+</svg>
